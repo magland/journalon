@@ -61,15 +61,12 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
       if (chatId) {
         // Check if we have a stored key for this chat
         const storedInfo = loadChatKeyInfo(chatId);
-        if (!storedInfo) {
-          return;
-        }
 
         loadChat({
           chatId,
         }).then((chat) => {
           if (chat) {
-            const chatKey = storedInfo.chatKey;
+            const chatKey = storedInfo?.chatKey;
             chatStateDispatch({
               type: "load_chat",
               chat,
