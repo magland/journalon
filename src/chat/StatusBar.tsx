@@ -2,6 +2,7 @@
 import { ForkRight, ResetTv } from "@mui/icons-material";
 import LockIcon from "@mui/icons-material/Lock";
 import SettingsIcon from "@mui/icons-material/Settings";
+import KeyIcon from "@mui/icons-material/Key";
 import {
   Box,
   FormControl,
@@ -29,6 +30,8 @@ const StatusBar: FunctionComponent<{
   onFinalize?: () => void;
   isFinalized?: boolean;
   canFinalize?: boolean;
+  onOpenChatKey?: () => void;
+  chatId?: string;
 }> = ({
   selectedModel,
   onModelChange,
@@ -42,7 +45,9 @@ const StatusBar: FunctionComponent<{
   onFork,
   onFinalize,
   isFinalized,
-  canFinalize
+  canFinalize,
+  onOpenChatKey,
+  chatId
 }) => {
   const numMessages = messages.length;
 
@@ -112,6 +117,21 @@ const StatusBar: FunctionComponent<{
         >
           <SettingsIcon fontSize="small" />
         </IconButton>
+        {chatId && (
+          <IconButton
+            size="small"
+            title="Chat Key Management"
+            onClick={onOpenChatKey}
+            sx={{
+              color: "text.secondary",
+              "&:hover": {
+                color: "primary.main",
+              },
+            }}
+          >
+            <KeyIcon fontSize="small" />
+          </IconButton>
+        )}
         {onFork && (
           <IconButton
             size="small"

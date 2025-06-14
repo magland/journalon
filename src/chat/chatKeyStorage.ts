@@ -34,3 +34,15 @@ export const removeChatKeyInfo = (chatId: string): void => {
     delete existingData[chatId];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 };
+
+export const getCurrentChatKey = (chatId: string): string | undefined => {
+    const info = loadChatKeyInfo(chatId);
+    return info?.chatKey;
+};
+
+export const setCurrentChatKey = (chatId: string, chatKey: string): void => {
+    saveChatKeyInfo({
+        chatId,
+        chatKey
+    });
+};

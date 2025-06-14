@@ -7,6 +7,7 @@ import { loadChatKeyInfo, saveChatKeyInfo } from "./chatKeyStorage";
 import MessageInput from "./MessageInput";
 import MessageList from "./MessageList";
 import OpenRouterKeyDialog from "./OpenRouterKeyDialog";
+import ChatKeyDialog from "./ChatKeyDialog";
 import { ORMessage, ORToolCall } from "./openRouterTypes";
 import { sendChatMessage } from "./sendChatMessage";
 import StatusBar from "./StatusBar";
@@ -296,6 +297,7 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
 
   const [currentPromptText, setCurrentPromptText] = useState("");
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChatKeyOpen, setIsChatKeyOpen] = useState(false);
 
   const handleSaveOpenRouterKey = (key: string) => {
     if (key) {
@@ -523,6 +525,8 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         messages={chatState.chat.messages}
         onClearChat={handleClearChat}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenChatKey={() => setIsChatKeyOpen(true)}
+        chatId={chatState.chat.chatId}
         onFork={handleFork}
         onFinalize={handleFinalize}
         isFinalized={chatState.chat.finalized}
@@ -533,6 +537,11 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
         onClose={() => setIsSettingsOpen(false)}
         currentKey={openRouterKey}
         onSave={handleSaveOpenRouterKey}
+      />
+      <ChatKeyDialog
+        open={isChatKeyOpen}
+        onClose={() => setIsChatKeyOpen(false)}
+        chatId={chatState.chat.chatId}
       />
     </Box>
   );
