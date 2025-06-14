@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getAllTools } from "./allTools";
 import { AVAILABLE_MODELS } from "./availableModels";
 import {
@@ -14,7 +13,7 @@ const constructInitialSystemMessages = async () => {
 
   // Note: the phrase "journal"
   // is checked on the backend.
-  message1 += `You are a daily journal coach who is helpful but not annoying. This app is called journalon.`;
+  message1 += `You are a daily journal coach who is helpful and encouraging but not annoying. Keep your responses relatively short. The main purpose is to keep a journal log and get some nice feedback along the way. This app is called journalon.`;
 
   const tools = await getAllTools();
   for (const a of tools) {
@@ -258,98 +257,6 @@ export const sendChatMessage = async (
   };
 };
 
-// Initialize IndexedDB
-const initDB = async (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("CompletionCache", 1);
-
-    request.onerror = () => reject(request.error);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains("responses")) {
-        const store = db.createObjectStore("responses", { keyPath: "key" });
-        store.createIndex("timestamp", "timestamp", { unique: false });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-  });
-};
-
-// Get cached response
-const completionCacheGet = async (key: string): Promise<ORResponse | null> => {
-  const db = await initDB();
-  return new Promise((resolve) => {
-    const transaction = db.transaction("responses", "readonly");
-    const store = transaction.objectStore("responses");
-    const request = store.get(key);
-
-    request.onsuccess = () => {
-      if (request.result) {
-        resolve(request.result.value);
-      } else {
-        resolve(null);
-      }
-    };
-
-    request.onerror = () => {
-      console.error("Error reading from cache:", request.error);
-      resolve(null);
-    };
-  });
-};
-
-// Store response in cache
-const completionCacheSet = async (
-  key: string,
-  value: ORResponse
-): Promise<void> => {
-  const db = await initDB();
-  const transaction = db.transaction("responses", "readwrite");
-  const store = transaction.objectStore("responses");
-
-  // Add new entry
-  await new Promise<void>((resolve, reject) => {
-    const request = store.put({
-      key,
-      value,
-      timestamp: Date.now(),
-    });
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-
-  // Check and clean up if needed
-  const countRequest = store.count();
-  countRequest.onsuccess = () => {
-    if (countRequest.result > 300) {
-      // Get all entries sorted by timestamp
-      const index = store.index("timestamp");
-      const cursorRequest = index.openCursor();
-      let deleteCount = countRequest.result - 300;
-
-      cursorRequest.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor && deleteCount > 0) {
-          store.delete(cursor.value.key);
-          deleteCount--;
-          cursor.continue();
-        }
-      };
-    }
-  };
-};
-
-// Compute hash for cache key
-const computeHash = async (input: string): Promise<string> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
-};
-
 export const fetchCompletion = async (
   request: ORRequest,
   o: {
@@ -357,15 +264,6 @@ export const fetchCompletion = async (
     signal?: AbortSignal;
   }
 ): Promise<ORResponse & { cacheHit?: boolean }> => {
-  const cacheKey = await computeHash(JSONStringifyDeterministic(request));
-  const cachedResponse = await completionCacheGet(cacheKey);
-  if (cachedResponse) {
-    return {
-      ...cachedResponse,
-      cacheHit: true,
-    };
-  }
-
   let response;
   if (o.openRouterKey) {
     // directly hit the OpenRouter API
@@ -419,10 +317,6 @@ export const fetchCompletion = async (
   if (!choice.message.content && !choice.message.tool_calls) {
     console.warn(choice);
     console.warn("Got empty response");
-  }
-  else {
-    // Cache the response if not empty
-    await completionCacheSet(cacheKey, result);
   }
 
   return result;
@@ -484,20 +378,4 @@ if (window.parent !== window) {
       globalData.parentWindowContext = event.data.context;
     }
   });
-}
-
-function JSONStringifyDeterministic(value: any): string {
-  if (value && typeof value === 'object') {
-    if (Array.isArray(value)) {
-      // Arrays keep their natural order
-      return '[' + value.map(JSONStringifyDeterministic).join(',') + ']';
-    }
-    // Objects → keys sorted lexicographically
-    const keys = Object.keys(value).sort();
-    return '{' + keys.map(k =>
-      JSON.stringify(k) + ':' + JSONStringifyDeterministic(value[k])
-    ).join(',') + '}';
-  }
-  // Primitives & null
-  return JSON.stringify(value);
 }

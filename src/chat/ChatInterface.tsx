@@ -317,8 +317,6 @@ const ChatInterface: FunctionComponent<ChatInterfaceProps> = ({
 
     // Warn that this is an experimental app.
     const warning = "⚠️";
-    ret += `\n\n${warning} This is an experimental app and is under construction. Please report any issues to the Neurosift team.`;
-
     ret += `\n\n${warning} All chats are saved and may be visible to other users.`;
 
     if (!recommendedModels.includes(chatState.currentModel)) {

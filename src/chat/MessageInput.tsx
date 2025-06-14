@@ -19,7 +19,19 @@ const MessageInput: FunctionComponent<MessageInputProps> = ({
   const setMessage = setCurrentPromptText;
   const handleSend = () => {
     if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
+      const msg = message.trim();
+      // Jan 1, 2023, 12:00 PM format
+      const date = new Date();
+      const options: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      };
+      const dateString = date.toLocaleDateString("en-US", options);
+      onSendMessage(`${dateString} | ${msg}`);
       setMessage("");
     }
   };
