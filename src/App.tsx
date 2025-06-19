@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import JournalInitializer from './components/JournalInitializer';
 import JournalView from './components/JournalView';
+import AboutPage from './components/AboutPage';
 import Layout from './components/Layout';
 
 const theme = createTheme({
@@ -32,6 +33,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/journal/:id" element={<JournalView />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
         </Layout>
       </Router>

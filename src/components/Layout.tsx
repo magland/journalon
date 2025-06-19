@@ -1,6 +1,6 @@
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,9 +33,17 @@ export default function Layout({ children }: LayoutProps) {
                 fontWeight: 600,
                 letterSpacing: '0.5px'
               }}
-            >
-              journalon
-            </Typography>
+              >
+                journalon
+              </Typography>
+              <Button
+                component={Link}
+                to="/about"
+                color="inherit"
+                sx={{ textTransform: 'none' }}
+              >
+                About
+              </Button>
           </Toolbar>
         </AppBar>
       )}
