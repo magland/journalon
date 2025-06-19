@@ -54,23 +54,17 @@ function parseJournalJson(journalJson: string): Journal {
   return journal;
 }
 
-// Cache for journals to avoid repeated network requests
-const journalCache = new Map<string, Journal>();
-
 export async function getAllJournals(): Promise<Journal[]> {
   // Get all journal IDs from local storage
   const journalIds = getJournalIds();
 
   // Fetch all journals that aren't already in the cache
   const fetchPromises = journalIds.map(async (id) => {
-    if (!journalCache.has(id)) {
-      try {
-        await getJournal(id);
-      } catch (error) {
-        console.error(`Failed to fetch journal ${id}:`, error);
-      }
+    try {
+      return await getJournal(id);
+    } catch (error) {
+      console.error(`Failed to fetch journal ${id}:`, error);
     }
-    return journalCache.get(id);
   });
 
   // Wait for all fetches to complete
@@ -81,11 +75,6 @@ export async function getAllJournals(): Promise<Journal[]> {
 }
 
 export async function getJournal(id: string): Promise<Journal | undefined> {
-  // Check cache first
-  if (journalCache.has(id)) {
-    return journalCache.get(id);
-  }
-
   try {
     // Get the private key from local storage
     const privateKey = getPrivateKey(id);
@@ -97,9 +86,6 @@ export async function getJournal(id: string): Promise<Journal | undefined> {
     // Retrieve from hashkeep
     const journalJson = await hashkeepGet(id);
     const journal = parseJournalJson(journalJson);
-
-    // Cache the journal
-    journalCache.set(id, journal);
 
     return journal;
   } catch (error) {
@@ -113,15 +99,9 @@ export async function updateJournal(journal: Journal): Promise<void> {
 
   // Store the updated journal in hashkeep
   await storeJournal(journal);
-
-  // Update cache
-  journalCache.set(journal.id, journal);
 }
 
 export async function deleteJournal(id: string): Promise<void> {
-  // Remove from cache
-  journalCache.delete(id);
-
   // Remove from local storage
   removeJournalId(id);
   removePrivateKey(id);
@@ -210,7 +190,6 @@ export async function importJournalWithPrivateKey(privateKey: string): Promise<J
     journal.id = id;
 
     // Store locally
-    journalCache.set(id, journal);
     addJournalId(id);
     storePrivateKey(id, privateKey);
 
@@ -258,7 +237,6 @@ export async function importJournal(
     await storeJournal(newJournal);
 
     // Update cache and local storage
-    journalCache.set(newJournal.id, newJournal);
     addJournalId(newJournal.id);
     storePrivateKey(newJournal.id, newJournal.privateKey);
 

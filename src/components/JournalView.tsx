@@ -49,7 +49,9 @@ export default function JournalView() {
         navigate('/');
         return;
       }
-      setJournal(journalData);
+      console.log('--- setting journal ---', journalData);
+      // Create a new object to ensure state update triggers effects
+      setJournal({...journalData});
     } catch (error) {
       console.error('Failed to load journal:', error);
       showSnackbar('Failed to load journal', 'error');
@@ -65,15 +67,21 @@ export default function JournalView() {
     }
   }, [id, loadJournal]);
 
+  // Log journal changes outside useEffect
+  console.info('--- a1', journal)
   useEffect(() => {
+    console.info('--- a2')
     // Scroll to bottom when entries change
     // Add a small delay to ensure DOM has updated
-    const timer = setTimeout(scrollToBottom, 100);
+    const timer = setTimeout(() => {
+      console.log('--- scrolling to bottom ---');
+      scrollToBottom()
+    }, 100);
     return () => clearTimeout(timer);
-  }, [journal?.entries]);
+  }, [journal]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   };
 
   const handleAddEntry = async () => {
@@ -217,7 +225,9 @@ export default function JournalView() {
             />
           ))
         )}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef}>
+          &nbsp; {/* Empty space to ensure scrolling works */}
+        </div>
       </Box>
 
       {/* Input Area */}
