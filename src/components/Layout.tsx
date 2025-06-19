@@ -17,6 +17,7 @@ export default function Layout({ children }: LayoutProps) {
     <Box sx={{ width: Math.min(650, browserWidth), padding: 0 }}>
       {isHomePage && (
         <AppBar
+          position="fixed"
           elevation={2}
           sx={{
             background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
@@ -46,8 +47,11 @@ export default function Layout({ children }: LayoutProps) {
           </Toolbar>
         </AppBar>
       )}
-      <Box sx={{ minHeight: '100vh', padding: isHomePage || isJournalPage ? 0 : 2 }}>
-        {children}
+      <Box>
+        {isHomePage && <Box sx={{ height: '64px' }} />} {/* Spacer for AppBar */}
+        <Box sx={{ minHeight: '100dvh', padding: isHomePage || isJournalPage ? 0 : 2 }}>
+          {children}
+        </Box>
       </Box>
     </Box>
   );
