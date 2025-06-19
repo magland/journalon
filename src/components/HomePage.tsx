@@ -3,7 +3,8 @@ import {
   Delete as DeleteIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
-  Upload as UploadIcon
+  Upload as UploadIcon,
+  Key as KeyIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -30,7 +31,9 @@ import {
   deleteJournal,
   exportJournal,
   getAllJournals,
+  getJournalPrivateKey,
   importJournal,
+  importJournalWithPrivateKey,
   updateJournal
 } from '../services/journalService';
 import type { ExportedJournal, Journal } from '../types';
@@ -47,6 +50,10 @@ export default function HomePage() {
   const [editJournalTitle, setEditJournalTitle] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [newJournalTitle, setNewJournalTitle] = useState('');
+  const [privateKeyDialogOpen, setPrivateKeyDialogOpen] = useState(false);
+  const [importPrivateKeyDialogOpen, setImportPrivateKeyDialogOpen] = useState(false);
+  const [privateKeyToImport, setPrivateKeyToImport] = useState('');
+  const [privateKey, setPrivateKey] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -124,6 +131,49 @@ export default function HomePage() {
     } catch (error) {
       console.error('Failed to export journal:', error);
       showSnackbar('Failed to export journal', 'error');
+    }
+  };
+
+  const handleShowPrivateKey = async (journal: Journal) => {
+    try {
+      const key = await getJournalPrivateKey(journal.id);
+      setPrivateKey(key);
+      setPrivateKeyDialogOpen(true);
+    } catch (error) {
+      console.error('Failed to get private key:', error);
+      showSnackbar('Failed to get private key', 'error');
+    }
+  };
+
+  const handleCopyPrivateKey = async () => {
+    if (!privateKey) return;
+
+    try {
+      await navigator.clipboard.writeText(privateKey);
+      showSnackbar('Private key copied to clipboard', 'success');
+    } catch (error) {
+      console.error('Failed to copy private key:', error);
+      showSnackbar('Failed to copy private key', 'error');
+    }
+  };
+
+  const handleImportWithPrivateKey = async () => {
+    if (!privateKeyToImport.trim()) return;
+
+    try {
+      const journal = await importJournalWithPrivateKey(privateKeyToImport.trim());
+      if (!journal) {
+        showSnackbar('No journal found with this private key', 'error');
+        return;
+      }
+
+      setImportPrivateKeyDialogOpen(false);
+      setPrivateKeyToImport('');
+      await loadJournals();
+      showSnackbar('Journal imported successfully', 'success');
+    } catch (error) {
+      console.error('Failed to import journal:', error);
+      showSnackbar('Failed to import journal with private key', 'error');
     }
   };
 
@@ -218,6 +268,16 @@ export default function HomePage() {
                   size="small"
                   onClick={(e) => {
                     e.stopPropagation();
+                    handleShowPrivateKey(journal);
+                  }}
+                  title="Show private key"
+                >
+                  <KeyIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     handleExportJournal(journal);
                   }}
                   title="Export journal"
@@ -250,7 +310,15 @@ export default function HomePage() {
           onClick={handleImportJournal}
           sx={{ minWidth: 120 }}
         >
-          Import Journal
+          Import from File
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<KeyIcon />}
+          onClick={() => setImportPrivateKeyDialogOpen(true)}
+          sx={{ minWidth: 120, ml: 2 }}
+        >
+          Import with Key
         </Button>
       </Box>
 
@@ -356,6 +424,58 @@ export default function HomePage() {
           </Button>
           <Button onClick={handleConfirmOverwrite} color="warning" variant="contained">
             Overwrite
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Private Key Dialog */}
+      <Dialog open={privateKeyDialogOpen} onClose={() => setPrivateKeyDialogOpen(false)}>
+        <DialogTitle>Journal Private Key</DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            Copy this private key to import the journal on another device:
+          </Typography>
+          <TextField
+            margin="dense"
+            fullWidth
+            variant="outlined"
+            value={privateKey || ''}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPrivateKeyDialogOpen(false)}>Close</Button>
+          <Button onClick={handleCopyPrivateKey} variant="contained" disabled={!privateKey}>
+            Copy to Clipboard
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Import with Private Key Dialog */}
+      <Dialog open={importPrivateKeyDialogOpen} onClose={() => setImportPrivateKeyDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Import Journal with Private Key</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Private Key"
+            fullWidth
+            variant="outlined"
+            value={privateKeyToImport}
+            onChange={(e) => setPrivateKeyToImport(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleImportWithPrivateKey();
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setImportPrivateKeyDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleImportWithPrivateKey} variant="contained" disabled={!privateKeyToImport.trim()}>
+            Import
           </Button>
         </DialogActions>
       </Dialog>

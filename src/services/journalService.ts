@@ -183,6 +183,40 @@ export async function checkJournalExists(id: string): Promise<Journal | null> {
   }
 }
 
+export async function getJournalPrivateKey(id: string): Promise<string | null> {
+  return getPrivateKey(id);
+}
+
+export async function importJournalWithPrivateKey(privateKey: string): Promise<Journal | null> {
+  try {
+    const id = await generatePublicKey(privateKey);
+
+    // Check if journal already exists locally
+    const existingJournal = await getJournal(id);
+    if (existingJournal) {
+      return existingJournal;
+    }
+
+    // Try to fetch from hashkeep using private key
+    const journalJson = await hashkeepGet(privateKey);
+    if (!journalJson) {
+      return null;
+    }
+
+    const journal = parseJournalJson(journalJson);
+
+    // Store locally
+    journalCache.set(journal.id, journal);
+    addJournalId(journal.id);
+    storePrivateKey(journal.id, privateKey);
+
+    return journal;
+  } catch (error) {
+    console.error('Failed to import journal with private key:', error);
+    return null;
+  }
+}
+
 export async function importJournal(
   exportedJournal: ExportedJournal,
   overwriteExisting: boolean = false
