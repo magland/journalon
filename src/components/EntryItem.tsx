@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import {
+  Cancel as CancelIcon,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Save as SaveIcon
+} from '@mui/icons-material';
 import {
   Box,
-  Paper,
-  Typography,
-  IconButton,
-  TextField,
+  Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  Button
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  TextField,
+  Typography
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon
-} from '@mui/icons-material';
+import { useState } from 'react';
 import type { Entry } from '../types';
 import { formatEntryDate } from '../utils/dateFormat';
 
