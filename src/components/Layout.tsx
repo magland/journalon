@@ -17,7 +17,6 @@ export default function Layout({ children }: LayoutProps) {
     <Box sx={{ width: Math.min(650, browserWidth), padding: 0 }}>
       {isHomePage && (
         <AppBar
-          position="static"
           elevation={2}
           sx={{
             background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
