@@ -48,8 +48,11 @@ export default function Layout({ children }: LayoutProps) {
         </AppBar>
       )}
       <Box>
-        {isHomePage && <Box sx={{ height: '64px' }} />} {/* Spacer for AppBar */}
-        <Box sx={{ minHeight: '100dvh', padding: isHomePage || isJournalPage ? 0 : 2 }}>
+        {(isHomePage || isJournalPage) && <Box sx={{ height: '64px' }} />} {/* Spacer for AppBar */}
+        <Box sx={{
+          minHeight: isHomePage || isJournalPage ? 'calc(100dvh - 64px)' : '100dvh',
+          padding: isHomePage || isJournalPage ? 0 : 2
+        }}>
           {children}
         </Box>
       </Box>
