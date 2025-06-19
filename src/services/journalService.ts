@@ -197,18 +197,22 @@ export async function importJournalWithPrivateKey(privateKey: string): Promise<J
       return existingJournal;
     }
 
-    // Try to fetch from hashkeep using private key
-    const journalJson = await hashkeepGet(privateKey);
+    // Try to fetch from hashkeep using the public key (id)
+    const journalJson = await hashkeepGet(id);
     if (!journalJson) {
       return null;
     }
 
     const journal = parseJournalJson(journalJson);
 
+    // Ensure we use the correct keys
+    journal.privateKey = privateKey;
+    journal.id = id;
+
     // Store locally
-    journalCache.set(journal.id, journal);
-    addJournalId(journal.id);
-    storePrivateKey(journal.id, privateKey);
+    journalCache.set(id, journal);
+    addJournalId(id);
+    storePrivateKey(id, privateKey);
 
     return journal;
   } catch (error) {
