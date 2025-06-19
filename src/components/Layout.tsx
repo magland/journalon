@@ -34,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
                 letterSpacing: '0.5px'
               }}
             >
-              Journalon
+              journalon
             </Typography>
           </Toolbar>
         </AppBar>

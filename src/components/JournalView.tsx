@@ -67,7 +67,9 @@ export default function JournalView() {
 
   useEffect(() => {
     // Scroll to bottom when entries change
-    scrollToBottom();
+    // Add a small delay to ensure DOM has updated
+    const timer = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timer);
   }, [journal?.entries]);
 
   const scrollToBottom = () => {
