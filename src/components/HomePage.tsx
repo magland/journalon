@@ -4,7 +4,8 @@ import {
   Download as DownloadIcon,
   Edit as EditIcon,
   Upload as UploadIcon,
-  Key as KeyIcon
+  Key as KeyIcon,
+  ContentCopy as ContentCopyIcon
 } from '@mui/icons-material';
 import {
   Alert,
@@ -120,6 +121,24 @@ export default function HomePage() {
     } catch (error) {
       console.error('Failed to delete journal:', error);
       showSnackbar('Failed to delete journal', 'error');
+    }
+  };
+
+  const formatJournalAsText = (journal: Journal) => {
+    return journal.entries.map(entry => {
+      const date = new Date(entry.timestamp);
+      return `${formatEntryDate(date)}\n${entry.content}\n\n`;
+    }).join('');
+  };
+
+  const handleCopyJournal = async (journal: Journal) => {
+    try {
+      const text = formatJournalAsText(journal);
+      await navigator.clipboard.writeText(text);
+      showSnackbar('Journal copied to clipboard', 'success');
+    } catch (error) {
+      console.error('Failed to copy journal:', error);
+      showSnackbar('Failed to copy journal', 'error');
     }
   };
 
@@ -273,6 +292,16 @@ export default function HomePage() {
                   title="Show private key"
                 >
                   <KeyIcon />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyJournal(journal);
+                  }}
+                  title="Copy journal as text"
+                >
+                  <ContentCopyIcon />
                 </IconButton>
                 <IconButton
                   size="small"
