@@ -55,6 +55,7 @@ export default function HomePage() {
   const [importPrivateKeyDialogOpen, setImportPrivateKeyDialogOpen] = useState(false);
   const [privateKeyToImport, setPrivateKeyToImport] = useState('');
   const [privateKey, setPrivateKey] = useState<string | null>(null);
+  const [chatGptDialogOpen, setChatGptDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -136,10 +137,16 @@ export default function HomePage() {
       const text = formatJournalAsText(journal);
       await navigator.clipboard.writeText(text);
       showSnackbar('Journal copied to clipboard', 'success');
+      setChatGptDialogOpen(true);
     } catch (error) {
       console.error('Failed to copy journal:', error);
       showSnackbar('Failed to copy journal', 'error');
     }
+  };
+
+  const handleGoToChatGPT = () => {
+    window.open('https://chat.openai.com', '_blank');
+    setChatGptDialogOpen(false);
   };
 
   const handleExportJournal = (journal: Journal) => {
@@ -505,6 +512,22 @@ export default function HomePage() {
           <Button onClick={() => setImportPrivateKeyDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleImportWithPrivateKey} variant="contained" disabled={!privateKeyToImport.trim()}>
             Import
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ChatGPT Dialog */}
+      <Dialog open={chatGptDialogOpen} onClose={() => setChatGptDialogOpen(false)}>
+        <DialogTitle>Go to ChatGPT?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Your journal has been copied to clipboard. Would you like to go to ChatGPT now?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setChatGptDialogOpen(false)}>No</Button>
+          <Button onClick={handleGoToChatGPT} variant="contained">
+            Go to ChatGPT
           </Button>
         </DialogActions>
       </Dialog>
